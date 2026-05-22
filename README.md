@@ -108,7 +108,7 @@ Deep Scan is a Nyuway-hosted analysis tier that performs dynamic sandbox executi
 nyuwaymcpscanner scan ./server --deep --token YOUR_TOKEN
 ```
 
-Join the waitlist: **https://nyuway.ai/mcp-scanner/access**
+Join the waitlist: **https://forms.gle/bH8nToK9Zh7ey5F46**
 
 ---
 
@@ -265,5 +265,5 @@ Apache 2.0. See [LICENSE](LICENSE).
 ## Links
 
 - Website: https://nyuway.ai
-- Deep Scan waitlist: https://nyuway.ai/mcp-scanner/access
+- Deep Scan waitlist: https://forms.gle/bH8nToK9Zh7ey5F46
 - Issues: https://github.com/Nyuway-Cybersecurity/nyuwaymcpscanner/issues

@@ -58,7 +58,7 @@ Documentation = "https://nyuway.ai/mcp-scanner/docs"
 Repository = "https://github.com/Nyuway-Cybersecurity/nyuwaymcpscanner"
 "Bug Tracker" = "https://github.com/Nyuway-Cybersecurity/nyuwaymcpscanner/issues"
 Changelog = "https://github.com/Nyuway-Cybersecurity/nyuwaymcpscanner/releases"
-"Deep Scan Waitlist" = "https://nyuway.ai/mcp-scanner/access"
+"Deep Scan Waitlist" = "https://forms.gle/bH8nToK9Zh7ey5F46"
 
 [project.scripts]
 nyuwaymcpscanner = "nyuwaymcpscanner.cli.main:cli"

@@ -85,7 +85,7 @@ def scan(
         if not token:
             click.echo(
                 "Deep Scan is currently in private beta and requires an invite token.\n"
-                "Request access at: https://nyuway.ai/mcp-scanner/access",
+                "Request access at: https://forms.gle/bH8nToK9Zh7ey5F46",
                 err=True,
             )
             raise SystemExit(1)
