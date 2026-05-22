@@ -116,7 +116,11 @@ def scan(
                 try:
                     findings.extend(scan_secrets(local_str))
                     findings.extend(run_yara(local_str))
-                    findings.extend(scan_supply_chain(local_str, offline=offline))
+                    # Skip supply chain when scanning a single non-dependency
+                    # file - walking the parent dir would pick up unrelated
+                    # requirements.txt files and produce misleading CVE findings.
+                    if single_file is None or _is_dependency_file(single_file):
+                        findings.extend(scan_supply_chain(local_str, offline=offline))
                 except FileNotFoundError as e:
                     click.echo(f"Error: {e}", err=True)
                     raise SystemExit(2)
@@ -127,10 +131,11 @@ def scan(
 
                 # Restrict to the single file when requested.
                 if single_file is not None:
-                    # Tag file-less findings (e.g. LLM) with the single file
-                    # so they are not silently dropped by the filter.
+                    # Tag only LLM findings (no file field, source=local_llm)
+                    # with the single file so they pass the filter. Do NOT tag
+                    # supply chain / other findings - they would be misleading.
                     for f in findings:
-                        if not f.get("file"):
+                        if not f.get("file") and f.get("source") == "local_llm":
                             f["file"] = str(single_file)
                     findings = _filter_findings_to_file(findings, single_file)
 
@@ -196,6 +201,24 @@ def _find_manifest(target: str) -> Path | None:
             if candidate.is_file():
                 return candidate
     return None
+
+
+def _is_dependency_file(path: Path) -> bool:
+    """Return True if the file is itself a dependency manifest."""
+    return path.name.lower() in {
+        "requirements.txt",
+        "requirements-dev.txt",
+        "requirements-test.txt",
+        "package.json",
+        "package-lock.json",
+        "yarn.lock",
+        "pipfile",
+        "pipfile.lock",
+        "pyproject.toml",
+        "setup.py",
+        "setup.cfg",
+        "poetry.lock",
+    }
 
 
 def _is_source_prefix(target: str) -> bool:
