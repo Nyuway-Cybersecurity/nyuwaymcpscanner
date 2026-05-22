@@ -38,3 +38,13 @@ Thumbs.db
 *.key
 *.pem
 secrets.json
+
+# Internal / confidential docs - never publish
+*_project.md
+*_internal.md
+*_confidential.md
+
+# Tool caches
+.ruff_cache/
+.mypy_cache/
+.pytest_cache/
