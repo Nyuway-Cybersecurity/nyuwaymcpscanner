@@ -359,3 +359,61 @@ def test_batch_fail_on_aggregates_across_targets(runner, tmp_path, clean_server_
     listing.write_text(f"{clean_server_path}\n{server_with_secret}\n")
     result = runner.invoke(cli, ["scan", str(listing), "--offline", "--batch", "--fail-on", "high"])
     assert result.exit_code == 1
+
+
+# ---------- single-file scan tests ----------
+
+def test_single_file_clean_passes(runner, tmp_path):
+    """Scanning a clean individual file returns PASS."""
+    f = tmp_path / "server.py"
+    f.write_text('print("hello")\n')
+    result = runner.invoke(cli, ["scan", str(f), "--offline", "--static-only"])
+    assert result.exit_code == 0
+    assert "PASS" in result.output
+
+
+def test_single_file_with_secret_detected(runner, tmp_path):
+    """Scanning a single file containing a secret surfaces the finding."""
+    f = tmp_path / "config.py"
+    f.write_text('AWS_ACCESS_KEY_ID = "AKIAIOSFODNN7EXAMPLE"\n')
+    result = runner.invoke(cli, ["scan", str(f), "--offline", "--static-only"])
+    assert result.exit_code == 0
+    assert "hardcoded_secret" in result.output
+
+
+def test_single_file_does_not_include_sibling_findings(runner, tmp_path):
+    """Findings from sibling files must NOT appear when scanning a single file."""
+    import json as _json
+    # clean file to scan
+    target = tmp_path / "clean.py"
+    target.write_text('print("hello")\n')
+    # sibling with a secret - must be ignored
+    (tmp_path / "other.py").write_text('AWS_ACCESS_KEY_ID = "AKIAIOSFODNN7EXAMPLE"\n')
+    result = runner.invoke(
+        cli, ["scan", str(target), "--offline", "--static-only", "--output", "json"]
+    )
+    assert result.exit_code == 0
+    report = _json.loads(result.output)
+    assert report["verdict"] == "PASS", (
+        f"Sibling file findings leaked into single-file scan: {report['findings']}"
+    )
+
+
+def test_single_file_json_output_is_valid(runner, tmp_path):
+    """Single-file scan produces valid JSON report."""
+    import json as _json
+    f = tmp_path / "tool.py"
+    f.write_text('import os\ndef run(cmd):\n    os.system("echo " + cmd)\n')
+    result = runner.invoke(
+        cli, ["scan", str(f), "--offline", "--static-only", "--output", "json"]
+    )
+    assert result.exit_code == 0
+    report = _json.loads(result.output)
+    assert report["target"] == str(f)
+    assert isinstance(report["findings"], list)
+
+
+def test_single_file_missing_exits_with_error(runner, tmp_path):
+    """Scanning a non-existent file exits with code 2."""
+    result = runner.invoke(cli, ["scan", str(tmp_path / "nope.py"), "--offline"])
+    assert result.exit_code == 2
