@@ -96,13 +96,60 @@ Three static layers run in sequence:
 A fourth **local LLM** layer runs semantic analysis of MCP tool manifests using a locally-hosted Ollama model (skipped with `--static-only`).
 
 ```bash
-# Pure static, no Ollama required - suitable for CI without GPU
+# Static only - no Ollama required, suitable for CI without GPU
 nyuwaymcpscanner scan ./server --static-only --offline
+
+# With LLM analysis - requires Ollama running locally
+nyuwaymcpscanner scan ./server --offline
 ```
+
+### Running with LLM analysis
+
+One-time setup to install Ollama and pull the model (~5GB):
+
+```bash
+nyuwaymcpscanner setup
+```
+
+Then scan without `--static-only`:
+
+```bash
+# Full Baseline: static + local LLM, fully air-gapped
+nyuwaymcpscanner scan ./my-mcp-server --offline
+
+# Single manifest file with LLM analysis
+nyuwaymcpscanner scan ./mcp.json --offline
+```
+
+The LLM layer only activates when an `mcp.json` manifest is present. If Ollama is not running, the scan falls back to static-only with a warning - it never fails hard.
+
+**Requirements:** ~8GB RAM, Ollama installed via `nyuwaymcpscanner setup`.
+
+### Scanning a single file
+
+When the target is a single file, findings are scoped to that file only - sibling files in the same directory are ignored:
+
+```bash
+# Scan a single mcp.json
+nyuwaymcpscanner scan ./mcp.json --offline --static-only
+
+# Scan a single source file
+nyuwaymcpscanner scan ./server.py --offline --static-only
+
+# Scan a requirements file (CVE lookup runs against its dependencies)
+nyuwaymcpscanner scan ./requirements.txt --static-only
+```
+
+| Target type | Recommended command |
+|---|---|
+| Single `mcp.json` or `.py` | `scan ./file --offline --static-only` |
+| Full server directory | `scan ./my-server --offline` |
+| `requirements.txt` / `package.json` | `scan ./requirements.txt --static-only` |
+| Claude Desktop config | `scan ./claude_desktop_config.json --config --offline --static-only` |
 
 ### Deep Scan (invite only)
 
-Deep Scan is a Nyuway-hosted analysis tier that performs dynamic sandbox execution, cross-server correlation, and adversarial probing. It is currently available by invite.
+Deep Scan is a Nyuway-hosted analysis tier that performs frontier-model semantic analysis, cross-tool exfiltration detection, and behavioral mismatch analysis. It is currently available by invite.
 
 ```bash
 nyuwaymcpscanner scan ./server --deep --token YOUR_TOKEN
