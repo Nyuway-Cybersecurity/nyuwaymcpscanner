@@ -16,7 +16,7 @@ def test_deep_scan_without_token_exits_nonzero(runner):
 
 def test_deep_scan_without_token_shows_waitlist_url(runner):
     result = runner.invoke(cli, ["scan", "./some-server", "--deep"])
-    assert "nyuway.ai/mcp-scanner/access" in result.output
+    assert "forms.gle/bH8nToK9Zh7ey5F46" in result.output
 
 
 def test_help_displays(runner):
