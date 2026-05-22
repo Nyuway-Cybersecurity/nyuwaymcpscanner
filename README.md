@@ -38,6 +38,10 @@ pip install nyuwaymcpscanner
 # Scan a local server directory
 nyuwaymcpscanner scan ./my-mcp-server
 
+# Scan a single file directly
+nyuwaymcpscanner scan ./mcp.json
+nyuwaymcpscanner scan ./config.py
+
 # Scan a package from npm or PyPI
 nyuwaymcpscanner scan npm:@modelcontextprotocol/server-github
 nyuwaymcpscanner scan pypi:weather-mcp
@@ -115,6 +119,8 @@ nyuwaymcpscanner scan TARGET [OPTIONS]
 
 TARGET
   ./path/to/server     Local directory
+  ./path/to/file.py    Single file (findings scoped to that file only)
+  ./mcp.json           Single manifest file
   github:owner/repo    GitHub repository (optionally @ref)
   npm:package@version  npm package
   pypi:package@version PyPI package
