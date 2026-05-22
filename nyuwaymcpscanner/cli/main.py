@@ -101,7 +101,16 @@ def scan(
 
     for tgt in targets:
         try:
-            with resolve_source(tgt) as local_path:
+            # Single-file target: scan parent dir, filter findings to this file.
+            tgt_path = Path(tgt)
+            single_file: Path | None = None
+            if tgt_path.is_file() and not _is_source_prefix(tgt):
+                single_file = tgt_path.resolve()
+                scan_tgt = str(tgt_path.parent)
+            else:
+                scan_tgt = tgt
+
+            with resolve_source(scan_tgt) as local_path:
                 findings: list[dict] = []
                 local_str = str(local_path)
                 try:
@@ -115,6 +124,15 @@ def scan(
                 if not static_only:
                     llm_findings = _run_local_llm_layer(local_str, model)
                     findings.extend(llm_findings)
+
+                # Restrict to the single file when requested.
+                if single_file is not None:
+                    # Tag file-less findings (e.g. LLM) with the single file
+                    # so they are not silently dropped by the filter.
+                    for f in findings:
+                        if not f.get("file"):
+                            f["file"] = str(single_file)
+                    findings = _filter_findings_to_file(findings, single_file)
 
                 score, verdict = calculate_score(findings)
 
@@ -178,6 +196,26 @@ def _find_manifest(target: str) -> Path | None:
             if candidate.is_file():
                 return candidate
     return None
+
+
+def _is_source_prefix(target: str) -> bool:
+    """Return True if target uses a remote source prefix (github:, npm:, pypi:)."""
+    return any(target.startswith(p) for p in ("github:", "npm:", "pypi:"))
+
+
+def _filter_findings_to_file(findings: list[dict], single_file: Path) -> list[dict]:
+    """Keep only findings whose 'file' field resolves to single_file."""
+    result = []
+    for f in findings:
+        finding_file = f.get("file")
+        if not finding_file:
+            continue
+        try:
+            if Path(finding_file).resolve() == single_file:
+                result.append(f)
+        except (TypeError, ValueError):
+            continue
+    return result
 
 
 def _resolve_targets(target: str, batch: bool, config_file: bool) -> list[str]:
