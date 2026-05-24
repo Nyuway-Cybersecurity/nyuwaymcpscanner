@@ -28,9 +28,13 @@ MAX_FILE_BYTES = 2 * 1024 * 1024
 
 # Directory name segments that indicate test/example/documentation/CI context.
 _TEST_OR_DOC_PARTS = {
-    "tests", "test", "__tests__",
-    "examples", "example",
-    "docs", "doc",
+    "tests",
+    "test",
+    "__tests__",
+    "examples",
+    "example",
+    "docs",
+    "doc",
     ".github",
 }
 
@@ -42,7 +46,9 @@ def _is_test_or_doc_file(path: Path) -> bool:
         return True
     name = path.name.lower()
     # pytest-style: test_foo.py; Jest-style: foo.test.ts / foo.spec.js
-    if name.startswith("test_") or name.endswith((".test.ts", ".test.js", ".spec.ts", ".spec.js")):
+    if name.startswith("test_") or name.endswith(
+        (".test.ts", ".test.js", ".spec.ts", ".spec.js")
+    ):
         return True
     if path.suffix.lower() in {".md", ".sh"}:
         return True

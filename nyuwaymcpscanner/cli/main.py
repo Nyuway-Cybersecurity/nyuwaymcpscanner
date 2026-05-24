@@ -6,7 +6,12 @@ import click
 from nyuwaymcpscanner.scanners.secrets import scan_secrets
 from nyuwaymcpscanner.scanners.yara_engine import run_yara
 from nyuwaymcpscanner.scanners.supply_chain import scan_supply_chain
-from nyuwaymcpscanner.scanners.virustotal import scan_virustotal, resolve_api_key, count_binaries, VTKeyMissing
+from nyuwaymcpscanner.scanners.virustotal import (
+    scan_virustotal,
+    resolve_api_key,
+    count_binaries,
+    VTKeyMissing,
+)
 from nyuwaymcpscanner.scanners.manifest import parse_manifest
 from nyuwaymcpscanner.scanners.llm_safety import (
     run_local_llm_analysis,

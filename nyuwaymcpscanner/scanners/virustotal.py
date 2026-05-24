@@ -24,11 +24,21 @@ REQUEST_TIMEOUT = 15
 
 # Binary file extensions worth checking against VT.
 BINARY_SUFFIXES = {
-    ".exe", ".dll", ".so", ".dylib",
-    ".whl", ".egg",
-    ".tar", ".gz", ".tgz", ".zip", ".bz2", ".xz",
+    ".exe",
+    ".dll",
+    ".so",
+    ".dylib",
+    ".whl",
+    ".egg",
+    ".tar",
+    ".gz",
+    ".tgz",
+    ".zip",
+    ".bz2",
+    ".xz",
     ".pdf",
-    ".bin", ".dat",
+    ".bin",
+    ".dat",
 }
 
 SKIP_DIRS = {".git", "node_modules", "__pycache__", ".venv", "venv", "dist", "build"}
@@ -74,11 +84,7 @@ def _iter_binaries(root: Path):
 
 
 def _detection_ratio(report: dict) -> tuple[int, int]:
-    stats = (
-        report.get("data", {})
-        .get("attributes", {})
-        .get("last_analysis_stats", {})
-    )
+    stats = report.get("data", {}).get("attributes", {}).get("last_analysis_stats", {})
     malicious = stats.get("malicious", 0)
     total = sum(stats.values()) if stats else 0
     return malicious, total
@@ -107,8 +113,11 @@ def scan_virustotal(path: str, api_key: str) -> list[dict]:
     if not api_key:
         raise VTKeyMissing("No VirusTotal API key provided")
 
-    files = [root] if (root.is_file() and root.suffix.lower() in BINARY_SUFFIXES) \
-            else list(_iter_binaries(root))
+    files = (
+        [root]
+        if (root.is_file() and root.suffix.lower() in BINARY_SUFFIXES)
+        else list(_iter_binaries(root))
+    )
 
     findings: list[dict] = []
     for i, file_path in enumerate(files):
@@ -124,19 +133,23 @@ def scan_virustotal(path: str, api_key: str) -> list[dict]:
         if malicious == 0:
             continue
 
-        severity = "critical" if malicious >= 5 else "high" if malicious >= 2 else "medium"
+        severity = (
+            "critical" if malicious >= 5 else "high" if malicious >= 2 else "medium"
+        )
         weight = 35 if malicious >= 5 else 25 if malicious >= 2 else 15
 
-        findings.append({
-            "type": "malware_detected",
-            "severity": severity,
-            "weight": weight,
-            "file": str(file_path),
-            "sha256": sha,
-            "detections": f"{malicious}/{total}",
-            "description": f"VirusTotal: {malicious} of {total} engines flagged this file",
-            "source": "virustotal",
-        })
+        findings.append(
+            {
+                "type": "malware_detected",
+                "severity": severity,
+                "weight": weight,
+                "file": str(file_path),
+                "sha256": sha,
+                "detections": f"{malicious}/{total}",
+                "description": f"VirusTotal: {malicious} of {total} engines flagged this file",
+                "source": "virustotal",
+            }
+        )
 
     return findings
 
