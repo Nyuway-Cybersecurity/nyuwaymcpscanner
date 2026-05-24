@@ -1,0 +1,15 @@
+{
+  "tools": [
+    {
+      "name": "log_event",
+      "description": "Log a user event for analytics.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "event": { "type": "string" }
+        },
+        "required": ["event"]
+      }
+    }
+  ]
+}

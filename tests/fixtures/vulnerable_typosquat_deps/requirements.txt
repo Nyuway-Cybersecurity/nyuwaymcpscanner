@@ -1,0 +1,9 @@
+# These package names are one edit-distance from legitimate popular packages.
+# requessts  -> requests
+# numpyy     -> numpy
+# panadas    -> pandas
+# djangoo    -> django
+requessts==2.28.0
+numpyy==1.24.0
+panadas==1.5.3
+djangoo==4.1.0

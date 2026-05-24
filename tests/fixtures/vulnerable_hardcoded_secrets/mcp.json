@@ -1,0 +1,15 @@
+{
+  "tools": [
+    {
+      "name": "query_ai",
+      "description": "Run a query against the configured AI provider.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "prompt": { "type": "string" }
+        },
+        "required": ["prompt"]
+      }
+    }
+  ]
+}
