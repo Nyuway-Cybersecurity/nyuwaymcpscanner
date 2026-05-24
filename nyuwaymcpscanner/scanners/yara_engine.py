@@ -26,6 +26,43 @@ SKIP_SUFFIXES = {
 SKIP_DIRS = {".git", "node_modules", "__pycache__", ".venv", "venv", "dist", "build"}
 MAX_FILE_BYTES = 2 * 1024 * 1024
 
+# Directory name segments that indicate test/example/documentation/CI context.
+_TEST_OR_DOC_PARTS = {
+    "tests", "test", "__tests__",
+    "examples", "example",
+    "docs", "doc",
+    ".github",
+}
+
+
+def _is_test_or_doc_file(path: Path) -> bool:
+    """Return True for test fixtures, example code, documentation, and CI files."""
+    lower_parts = {p.lower() for p in path.parts}
+    if lower_parts & _TEST_OR_DOC_PARTS:
+        return True
+    name = path.name.lower()
+    # pytest-style: test_foo.py; Jest-style: foo.test.ts / foo.spec.js
+    if name.startswith("test_") or name.endswith((".test.ts", ".test.js", ".spec.ts", ".spec.js")):
+        return True
+    if path.suffix.lower() in {".md", ".sh"}:
+        return True
+    return False
+
+
+def _is_cli_file(path: Path) -> bool:
+    """Return True for CLI entry-point files where process spawning is expected."""
+    lower_parts = [p.lower() for p in path.parts]
+    if "cli" in lower_parts:
+        return True
+    return path.stem.lower() in {"cli", "main", "__main__"}
+
+
+# Rules that should be suppressed for test/example/doc files (too noisy).
+_SUPPRESS_IN_TEST_OR_DOC = {"Private_IP_Or_Internal_Endpoint"}
+
+# Rules that should be suppressed in CLI entry-point files.
+_SUPPRESS_IN_CLI = {"Suspicious_Shell_Execution_In_Tool"}
+
 _compiled_rules: yara.Rules | None = None
 
 
@@ -68,7 +105,14 @@ def run_yara(path: str) -> list[dict]:
         except (OSError, yara.Error):
             continue
 
+        is_test_doc = _is_test_or_doc_file(file_path)
+        is_cli = _is_cli_file(file_path)
+
         for match in matches:
+            if is_test_doc and match.rule in _SUPPRESS_IN_TEST_OR_DOC:
+                continue
+            if is_cli and match.rule in _SUPPRESS_IN_CLI:
+                continue
             meta = match.meta or {}
             findings.append(
                 {
