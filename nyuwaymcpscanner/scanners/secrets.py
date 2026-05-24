@@ -33,6 +33,50 @@ PATTERNS: list[tuple[str, re.Pattern, str]] = [
     ),
 ]
 
+# Placeholder substrings that appear in documentation examples and READMEs.
+# A matched value containing any of these is treated as a non-secret.
+_PLACEHOLDER_FRAGMENTS = {
+    "your-",
+    "-your-",
+    "your_",
+    "_your_",
+    "xxxxxxx",
+    "replace-me",
+    "insert-here",
+}
+
+# The canonical jwt.io demonstration token that appears in countless test suites.
+_KNOWN_SAFE_JWTS = {
+    "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiYWRtaW4iOnRydWUsImlhdCI6MTUxNjIzOTAyMn0.KMUFsIDTnFmyG3nMiGM6H9FNFUROf3wh7SmqJp-QV30",
+    # Compact variant without the assertion= prefix
+    "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c",
+}
+
+# Directory segments that indicate test or example context.
+_TEST_OR_DOC_PARTS = {"tests", "test", "__tests__", "examples", "example", "docs", "doc"}
+
+
+def _is_test_or_doc_file(path: Path) -> bool:
+    lower_parts = {p.lower() for p in path.parts}
+    if lower_parts & _TEST_OR_DOC_PARTS:
+        return True
+    name = path.name.lower()
+    if name.startswith("test_") or name.endswith((".test.ts", ".test.js", ".spec.ts", ".spec.js")):
+        return True
+    if path.suffix.lower() == ".md":
+        return True
+    return False
+
+
+def _is_placeholder(matched_value: str) -> bool:
+    lower = matched_value.lower()
+    return any(frag in lower for frag in _PLACEHOLDER_FRAGMENTS)
+
+
+def _is_known_safe_jwt(matched_value: str) -> bool:
+    return matched_value.strip() in _KNOWN_SAFE_JWTS
+
+
 # Skip binaries and lock-style files where matches would be noise.
 SKIP_SUFFIXES = {
     ".png",
@@ -86,19 +130,37 @@ def scan_secrets(path: str) -> list[dict]:
         except (OSError, UnicodeDecodeError):
             continue
 
+        is_test_doc = _is_test_or_doc_file(file_path)
+
         for line_num, line in enumerate(text.splitlines(), start=1):
             for label, pattern, severity in PATTERNS:
-                if pattern.search(line):
-                    findings.append(
-                        {
-                            "type": "hardcoded_secret",
-                            "label": label,
-                            "severity": severity,
-                            "weight": 25,
-                            "file": str(file_path),
-                            "line": line_num,
-                            "evidence": line.strip()[:200],
-                        }
-                    )
+                m = pattern.search(line)
+                if not m:
+                    continue
+                matched_value = m.group(0)
+
+                # Drop obvious documentation placeholders.
+                if _is_placeholder(matched_value):
+                    continue
+
+                # Drop the canonical jwt.io demo token used in test suites.
+                if label == "generic_jwt" and _is_known_safe_jwt(matched_value):
+                    continue
+
+                # JWTs in test/example/doc files are almost always fixtures.
+                if label == "generic_jwt" and is_test_doc:
+                    continue
+
+                findings.append(
+                    {
+                        "type": "hardcoded_secret",
+                        "label": label,
+                        "severity": severity,
+                        "weight": 25,
+                        "file": str(file_path),
+                        "line": line_num,
+                        "evidence": line.strip()[:200],
+                    }
+                )
 
     return findings
