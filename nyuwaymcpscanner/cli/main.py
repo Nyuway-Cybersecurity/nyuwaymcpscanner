@@ -6,6 +6,7 @@ import click
 from nyuwaymcpscanner.scanners.secrets import scan_secrets
 from nyuwaymcpscanner.scanners.yara_engine import run_yara
 from nyuwaymcpscanner.scanners.supply_chain import scan_supply_chain
+from nyuwaymcpscanner.scanners.virustotal import scan_virustotal, resolve_api_key, VTKeyMissing
 from nyuwaymcpscanner.scanners.manifest import parse_manifest
 from nyuwaymcpscanner.scanners.llm_safety import (
     run_local_llm_analysis,
@@ -68,6 +69,12 @@ def cli():
 @click.option(
     "--model", default=RECOMMENDED_MODEL, help="Ollama model for the local LLM layer."
 )
+@click.option(
+    "--vt-key",
+    default=None,
+    envvar="VIRUSTOTAL_API_KEY",
+    help="VirusTotal API key for binary malware hash lookup (or set VIRUSTOTAL_API_KEY env var).",
+)
 def scan(
     target,
     static_only,
@@ -79,6 +86,7 @@ def scan(
     batch,
     config_file,
     model,
+    vt_key,
 ):
     """Scan an MCP server."""
     if deep:
@@ -121,6 +129,13 @@ def scan(
                     # requirements.txt files and produce misleading CVE findings.
                     if single_file is None or _is_dependency_file(single_file):
                         findings.extend(scan_supply_chain(local_str, offline=offline))
+                    if not offline:
+                        vt_api_key = resolve_api_key(vt_key)
+                        if vt_api_key:
+                            try:
+                                findings.extend(scan_virustotal(local_str, vt_api_key))
+                            except VTKeyMissing:
+                                pass
                 except FileNotFoundError as e:
                     click.echo(f"Error: {e}", err=True)
                     raise SystemExit(2)
