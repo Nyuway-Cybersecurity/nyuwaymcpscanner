@@ -9,8 +9,28 @@ Versions follow [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+---
+
+## [0.2.0] - 2026-05-24
+
 ### Added
-- Single-file scan support: `nyuwaymcpscanner scan ./mcp.json` or any individual source file; findings are scoped to that file only, sibling files are excluded
+- VirusTotal binary malware detection: SHA256 hash-only lookup against 70+ AV engines; no file content uploaded. Enabled via `VIRUSTOTAL_API_KEY` env var or `--vt-key` flag. Skipped automatically with `--offline`.
+- Hint message when binaries are found but no VT key is set, with instructions to enable detection.
+- Single-file scan support: `nyuwaymcpscanner scan ./mcp.json` or any individual source file; findings are scoped to that file only, sibling files are excluded.
+- Multi-language shell execution detection: extended `Suspicious_Shell_Execution_In_Tool` YARA rule to cover 10 languages with 50 patterns - Python, JavaScript/TypeScript, Go, Java, Kotlin, Rust, Ruby, C#, and PHP.
+- New Python patterns: `os.popen`, `os.execv*`, `pty.spawn`, `subprocess.getoutput`, `subprocess.getstatusoutput`.
+- New JS/TS patterns: `child_process.spawn`, `spawnSync`, `execSync`, `execFile`, `new Function(`.
+- New Go patterns: `syscall.Exec`, `syscall.ForkExec`.
+- New Java patterns: `ScriptEngineManager` (Nashorn/JS engine eval equivalent).
+- New Rust patterns: `std::process::Command`, `nix::unistd::execv`.
+- New Ruby patterns: `Open3.popen3`, `Open3.capture3`, `PTY.spawn`, `%x{...}`, `spawn(`.
+- New C# patterns: `new ProcessStartInfo`, `Assembly.Load`, `CSharpCodeProvider`.
+- New PHP patterns: `system`, `exec`, `eval`, backtick execution, `create_function`, `assert('...`, `preg_replace /e`.
+- Competitive capability comparison table in README.
+- False positive tuning: test/doc/CI-aware rule suppression; placeholder token filtering; known-safe JWT allowlist.
+
+### Fixed
+- Single-file scans no longer trigger supply chain CVE lookup against unrelated sibling `requirements.txt` files.
 
 ---
 
