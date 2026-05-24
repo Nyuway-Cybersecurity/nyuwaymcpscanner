@@ -84,6 +84,16 @@ def _detection_ratio(report: dict) -> tuple[int, int]:
     return malicious, total
 
 
+def count_binaries(path: str) -> int:
+    """Return the number of binary files that would be checked by VT."""
+    root = Path(path)
+    if not root.exists():
+        return 0
+    if root.is_file():
+        return 1 if root.suffix.lower() in BINARY_SUFFIXES else 0
+    return sum(1 for _ in _iter_binaries(root))
+
+
 def scan_virustotal(path: str, api_key: str) -> list[dict]:
     """Hash-check binary files in path against VirusTotal.
 

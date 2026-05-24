@@ -92,8 +92,9 @@ Three static layers run in sequence:
 | **Secrets** | Hardcoded AWS/GCP/Azure keys, OpenAI/Anthropic tokens, private keys, JWT secrets, generic passwords |
 | **YARA rules** | Tool-poisoning instructions, external logging endpoints, shell execution, plaintext passwords, internal IP leakage |
 | **Supply chain** | Typosquatted dependency names (edit-distance 1 from popular packages); CVE lookup via OSV.dev (skipped in `--offline` mode) |
+| **VirusTotal** | SHA256 hash lookup for binary files against 70+ AV engines - no file upload, hash only (skipped when `VIRUSTOTAL_API_KEY` is not set) |
 
-A fourth **local LLM** layer runs semantic analysis of MCP tool manifests using a locally-hosted Ollama model (skipped with `--static-only`).
+A fifth **local LLM** layer runs semantic analysis of MCP tool manifests using a locally-hosted Ollama model (skipped with `--static-only`).
 
 ```bash
 # Static only - no Ollama required, suitable for CI without GPU
@@ -124,6 +125,44 @@ nyuwaymcpscanner scan ./mcp.json --offline
 The LLM layer only activates when an `mcp.json` manifest is present. If Ollama is not running, the scan falls back to static-only with a warning - it never fails hard.
 
 **Requirements:** ~8GB RAM, Ollama installed via `nyuwaymcpscanner setup`.
+
+### VirusTotal malware detection
+
+nyuwaymcpscanner can hash-check binary files (wheels, archives, executables, DLLs) against VirusTotal's 70+ AV engines. Only the SHA256 hash is sent - no file content ever leaves your machine.
+
+**Setup (free, takes 2 minutes):**
+
+1. Create a free account at [virustotal.com](https://www.virustotal.com)
+2. Go to your profile and copy your API key
+3. Set it once in your environment:
+
+```bash
+export VIRUSTOTAL_API_KEY=your_key_here
+```
+
+Then scan normally - VirusTotal runs automatically on any binary files found:
+
+```bash
+nyuwaymcpscanner scan npm:some-package
+nyuwaymcpscanner scan github:owner/repo
+nyuwaymcpscanner scan ./my-mcp-server
+```
+
+If binaries are found but no key is set, the scanner prints a reminder:
+
+```
+Note: 3 binary files not checked for malware - set VIRUSTOTAL_API_KEY for hash-based detection (free at virustotal.com).
+```
+
+You can also pass the key inline for one-off scans:
+
+```bash
+nyuwaymcpscanner scan ./server --vt-key YOUR_KEY
+```
+
+VirusTotal is skipped automatically when `--offline` is set. Free tier allows 500 lookups per day.
+
+---
 
 ### Scanning a single file
 
@@ -184,6 +223,7 @@ Options
   --deep           Run Deep Scan (invite only; requires --token)
   --token TOKEN    Deep Scan invite token
   --model MODEL    Ollama model for local LLM layer (default: llama3)
+  --vt-key KEY     VirusTotal API key for binary malware detection (or set VIRUSTOTAL_API_KEY)
 
 nyuwaymcpscanner setup
   Download and verify the local Ollama model for LLM-assisted scanning.
@@ -293,6 +333,7 @@ Each finding carries a `weight` (5-35). The final score is `max(weight_sum, seve
 | `typosquatting_risk` | MEDIUM | Dependency name 1 edit-distance from a popular package |
 | `dependency_cve` | HIGH | Known CVE in a pinned dependency (requires network; skipped with --offline) |
 | `tool_poisoning` | CRITICAL | LLM-detected hidden instruction in tool description |
+| `malware_detected` | CRITICAL-MEDIUM | Binary file flagged by VirusTotal AV engines (requires `VIRUSTOTAL_API_KEY`) |
 
 ---
 
