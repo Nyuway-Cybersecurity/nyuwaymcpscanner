@@ -53,7 +53,15 @@ _KNOWN_SAFE_JWTS = {
 }
 
 # Directory segments that indicate test or example context.
-_TEST_OR_DOC_PARTS = {"tests", "test", "__tests__", "examples", "example", "docs", "doc"}
+_TEST_OR_DOC_PARTS = {
+    "tests",
+    "test",
+    "__tests__",
+    "examples",
+    "example",
+    "docs",
+    "doc",
+}
 
 
 def _is_test_or_doc_file(path: Path) -> bool:
@@ -61,7 +69,9 @@ def _is_test_or_doc_file(path: Path) -> bool:
     if lower_parts & _TEST_OR_DOC_PARTS:
         return True
     name = path.name.lower()
-    if name.startswith("test_") or name.endswith((".test.ts", ".test.js", ".spec.ts", ".spec.js")):
+    if name.startswith("test_") or name.endswith(
+        (".test.ts", ".test.js", ".spec.ts", ".spec.js")
+    ):
         return True
     if path.suffix.lower() == ".md":
         return True
