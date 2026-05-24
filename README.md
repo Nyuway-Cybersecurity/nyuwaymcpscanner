@@ -337,6 +337,32 @@ Each finding carries a `weight` (5-35). The final score is `max(weight_sum, seve
 
 ---
 
+## How nyuwaymcpscanner compares
+
+| Capability | nyuwaymcpscanner | Cisco mcp-scanner | Invariant/Snyk mcp-scan | Others |
+|---|:---:|:---:|:---:|:---:|
+| Hardcoded secret detection (8 types) | yes | partial | - | - |
+| Shell execution patterns - 10 languages | yes (50 patterns) | Python/JS only | - | - |
+| Supply chain CVE lookup (OSV.dev) | yes | pip-audit only | - | - |
+| Typosquatting detection | yes | - | - | - |
+| VirusTotal binary malware (hash only) | yes | yes | - | - |
+| Tool poisoning / exfil instructions | yes | yes | yes | partial |
+| Local LLM semantic analysis | yes (Ollama, offline) | cloud only | - | - |
+| Fully air-gapped / offline mode | yes | no | no | no |
+| SARIF 2.1.0 output | yes | - | - | - |
+| JSON output | yes | yes | - | - |
+| Batch and config file scanning | yes | - | partial | - |
+| Single-file scoped scanning | yes | - | - | - |
+| Test/doc-aware false positive tuning | yes | - | - | - |
+| Open, auditable rules (YARA) | yes | no | no | no |
+| CI/CD fail-on severity gate | yes | - | - | - |
+| Runtime proxy / tool pinning | - | - | yes | yes |
+| Cloud behavioral analysis | roadmap (Deep Scan) | yes | - | - |
+
+Runtime proxy and behavioral analysis (bottom two rows) are complementary to static scanning - they run at a different point in the deployment lifecycle. nyuwaymcpscanner is designed as the pre-deploy static layer; tools like Invariant/Snyk handle the runtime layer.
+
+---
+
 ## Requirements
 
 - Python 3.11+
