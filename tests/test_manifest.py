@@ -1,4 +1,5 @@
 """MCP manifest parser tests."""
+
 import json
 import pytest
 from nyuwaymcpscanner.scanners.manifest import parse_manifest
@@ -10,7 +11,10 @@ def test_parses_valid_manifest(tmp_path):
             {
                 "name": "read_file",
                 "description": "Read a file.",
-                "inputSchema": {"type": "object", "properties": {"path": {"type": "string"}}},
+                "inputSchema": {
+                    "type": "object",
+                    "properties": {"path": {"type": "string"}},
+                },
             }
         ]
     }

@@ -1,5 +1,5 @@
 """Supply chain scanner tests."""
-import pytest
+
 from nyuwaymcpscanner.scanners.supply_chain import scan_supply_chain
 
 
@@ -22,7 +22,9 @@ def test_detects_typosquatting_in_requirements(tmp_path):
     (project / "requirements.txt").write_text("requessts==1.0.0\n")
     findings = scan_supply_chain(str(project), offline=True)
     squat_findings = [f for f in findings if f["type"] == "typosquatting_risk"]
-    assert squat_findings, "Expected typosquatting risk for 'requessts' (one edit from 'requests')"
+    assert squat_findings, (
+        "Expected typosquatting risk for 'requessts' (one edit from 'requests')"
+    )
     assert squat_findings[0]["package"] == "requessts"
 
 
@@ -64,7 +66,12 @@ def test_osv_vuln_parsed_into_finding(tmp_path, monkeypatch):
             {
                 "id": "GHSA-35jh-r3h4-6jhm",
                 "summary": "Prototype Pollution in lodash",
-                "severity": [{"type": "CVSS_V3", "score": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H"}],
+                "severity": [
+                    {
+                        "type": "CVSS_V3",
+                        "score": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H",
+                    }
+                ],
                 "database_specific": {"severity": ["HIGH"]},
             }
         ]
@@ -73,8 +80,11 @@ def test_osv_vuln_parsed_into_finding(tmp_path, monkeypatch):
     from nyuwaymcpscanner.scanners import supply_chain as sc
 
     class FakeResponse:
-        def raise_for_status(self): pass
-        def json(self): return osv_response
+        def raise_for_status(self):
+            pass
+
+        def json(self):
+            return osv_response
 
     monkeypatch.setattr(sc.requests, "post", lambda *a, **kw: FakeResponse())
 
@@ -98,7 +108,9 @@ def test_osv_returns_garbage_body(tmp_path, monkeypatch):
     from nyuwaymcpscanner.scanners import supply_chain as sc
 
     class GarbageResponse:
-        def raise_for_status(self): pass
+        def raise_for_status(self):
+            pass
+
         def json(self):
             raise ValueError("not json")
 
@@ -121,7 +133,9 @@ def test_osv_returns_http_error(tmp_path, monkeypatch):
     class ErrorResponse:
         def raise_for_status(self):
             raise real_requests.HTTPError("500 Server Error")
-        def json(self): return {}
+
+        def json(self):
+            return {}
 
     monkeypatch.setattr(sc.requests, "post", lambda *a, **kw: ErrorResponse())
     findings = scan_supply_chain(str(project), offline=False)
@@ -154,6 +168,7 @@ def test_offline_mode_skips_network(tmp_path, monkeypatch):
     from nyuwaymcpscanner.scanners import supply_chain as sc
 
     called = {"n": 0}
+
     def fail_if_called(*args, **kwargs):
         called["n"] += 1
         raise AssertionError("Network call made in offline mode")

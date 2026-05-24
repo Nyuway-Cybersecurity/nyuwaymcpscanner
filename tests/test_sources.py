@@ -1,8 +1,8 @@
 """Source fetcher tests. All HTTP and registry calls are mocked."""
+
 from __future__ import annotations
 
 import io
-import json
 import tarfile
 import zipfile
 from pathlib import Path
@@ -14,21 +14,26 @@ from nyuwaymcpscanner.sources import github as gh
 from nyuwaymcpscanner.sources import npm as npm_src
 from nyuwaymcpscanner.sources import pypi as pypi_src
 from nyuwaymcpscanner.sources._archive import (
-    safe_extract_tar, safe_extract_zip, UnsafeArchive,
+    safe_extract_tar,
+    safe_extract_zip,
+    UnsafeArchive,
     MAX_ENTRY_BYTES,
 )
 
 
 # ---------- helpers to build test archives ----------
 
-def make_tar(entries: dict[str, bytes], path: Path, malicious_names: list[str] | None = None) -> Path:
+
+def make_tar(
+    entries: dict[str, bytes], path: Path, malicious_names: list[str] | None = None
+) -> Path:
     """Build a tar.gz with the given entries. Optionally include unsafe names."""
     with tarfile.open(path, "w:gz") as tar:
         for name, data in entries.items():
             info = tarfile.TarInfo(name=name)
             info.size = len(data)
             tar.addfile(info, fileobj=io.BytesIO(data))
-        for bad_name in (malicious_names or []):
+        for bad_name in malicious_names or []:
             info = tarfile.TarInfo(name=bad_name)
             info.size = 0
             tar.addfile(info, fileobj=io.BytesIO(b""))
@@ -43,6 +48,7 @@ def make_zip(entries: dict[str, bytes], path: Path) -> Path:
 
 
 # ---------- safe extract ----------
+
 
 def test_safe_extract_tar_extracts_normal_archive(tmp_path):
     archive = make_tar({"pkg/index.js": b"console.log(1)\n"}, tmp_path / "ok.tar.gz")
@@ -104,6 +110,7 @@ def test_safe_extract_zip_rejects_absolute_path(tmp_path):
 
 # ---------- dispatch / resolver ----------
 
+
 def test_resolve_unknown_prefix_raises():
     with pytest.raises(UnsupportedSource):
         with resolve("docker:foo/bar"):
@@ -133,8 +140,10 @@ def test_resolve_windows_path_not_mistaken_for_source(tmp_path):
 
 # ---------- github fetcher ----------
 
+
 class _FakeStreamingResponse:
     """Minimal stub of a requests streaming Response."""
+
     def __init__(self, content: bytes, status: int = 200):
         self._content = content
         self.status_code = status
@@ -142,6 +151,7 @@ class _FakeStreamingResponse:
     def raise_for_status(self):
         if self.status_code >= 400:
             import requests
+
             raise requests.HTTPError(f"HTTP {self.status_code}")
 
     def iter_content(self, chunk_size=8192):
@@ -176,8 +186,9 @@ def test_github_fetch_downloads_and_extracts(monkeypatch, tmp_path):
     make_tar({"nyuway-scanner-deadbeef/index.js": b"// hello\n"}, archive)
     content = archive.read_bytes()
 
-    monkeypatch.setattr(gh.requests, "get",
-                        lambda *a, **kw: _FakeStreamingResponse(content))
+    monkeypatch.setattr(
+        gh.requests, "get", lambda *a, **kw: _FakeStreamingResponse(content)
+    )
 
     with gh.fetch_github("github:nyuway/scanner@main") as path:
         assert Path(path).is_dir()
@@ -186,8 +197,10 @@ def test_github_fetch_downloads_and_extracts(monkeypatch, tmp_path):
 
 def test_github_download_failure_raises(monkeypatch):
     import requests as real_requests
+
     def boom(*a, **kw):
         raise real_requests.ConnectionError("no network")
+
     monkeypatch.setattr(gh.requests, "get", boom)
     with pytest.raises(gh.GitHubFetchError):
         with gh.fetch_github("github:nyuway/scanner"):
@@ -195,6 +208,7 @@ def test_github_download_failure_raises(monkeypatch):
 
 
 # ---------- npm fetcher ----------
+
 
 class _FakeJSONResponse:
     def __init__(self, payload):
@@ -226,14 +240,23 @@ def test_npm_rejects_invalid_name():
 
 def test_npm_fetch_end_to_end(monkeypatch, tmp_path):
     archive = tmp_path / "pkg.tgz"
-    make_tar({"package/index.js": b"module.exports = 1;\n",
-              "package/package.json": b'{"name":"fakepkg"}'}, archive)
+    make_tar(
+        {
+            "package/index.js": b"module.exports = 1;\n",
+            "package/package.json": b'{"name":"fakepkg"}',
+        },
+        archive,
+    )
     archive_bytes = archive.read_bytes()
 
     registry_payload = {
         "dist-tags": {"latest": "1.0.0"},
         "versions": {
-            "1.0.0": {"dist": {"tarball": "https://registry.npmjs.org/fakepkg/-/fakepkg-1.0.0.tgz"}}
+            "1.0.0": {
+                "dist": {
+                    "tarball": "https://registry.npmjs.org/fakepkg/-/fakepkg-1.0.0.tgz"
+                }
+            }
         },
     }
 
@@ -251,14 +274,16 @@ def test_npm_fetch_end_to_end(monkeypatch, tmp_path):
 
 def test_npm_unknown_version_raises(monkeypatch):
     registry_payload = {"dist-tags": {"latest": "1.0.0"}, "versions": {"1.0.0": {}}}
-    monkeypatch.setattr(npm_src.requests, "get",
-                        lambda *a, **kw: _FakeJSONResponse(registry_payload))
+    monkeypatch.setattr(
+        npm_src.requests, "get", lambda *a, **kw: _FakeJSONResponse(registry_payload)
+    )
     with pytest.raises(npm_src.NpmFetchError):
         with npm_src.fetch_npm("npm:fakepkg@9.9.9"):
             pass
 
 
 # ---------- pypi fetcher ----------
+
 
 def test_pypi_parses_name_and_version():
     name, version = pypi_src._parse_spec("pypi:requests@2.31.0")
@@ -278,9 +303,11 @@ def test_pypi_fetch_sdist_end_to_end(monkeypatch, tmp_path):
 
     pypi_payload = {
         "urls": [
-            {"packagetype": "sdist",
-             "filename": "fakepkg-1.0.0.tar.gz",
-             "url": "https://files.pythonhosted.org/fakepkg-1.0.0.tar.gz"}
+            {
+                "packagetype": "sdist",
+                "filename": "fakepkg-1.0.0.tar.gz",
+                "url": "https://files.pythonhosted.org/fakepkg-1.0.0.tar.gz",
+            }
         ]
     }
 
@@ -302,9 +329,11 @@ def test_pypi_falls_back_to_wheel(monkeypatch, tmp_path):
 
     pypi_payload = {
         "urls": [
-            {"packagetype": "bdist_wheel",
-             "filename": "fakepkg-1.0-py3-none-any.whl",
-             "url": "https://files.pythonhosted.org/fakepkg-1.0-py3-none-any.whl"}
+            {
+                "packagetype": "bdist_wheel",
+                "filename": "fakepkg-1.0-py3-none-any.whl",
+                "url": "https://files.pythonhosted.org/fakepkg-1.0-py3-none-any.whl",
+            }
         ]
     }
 
@@ -321,8 +350,9 @@ def test_pypi_falls_back_to_wheel(monkeypatch, tmp_path):
 
 
 def test_pypi_no_distributions_raises(monkeypatch):
-    monkeypatch.setattr(pypi_src.requests, "get",
-                        lambda *a, **kw: _FakeJSONResponse({"urls": []}))
+    monkeypatch.setattr(
+        pypi_src.requests, "get", lambda *a, **kw: _FakeJSONResponse({"urls": []})
+    )
     with pytest.raises(pypi_src.PyPIFetchError):
         with pypi_src.fetch_pypi("pypi:fakepkg"):
             pass
