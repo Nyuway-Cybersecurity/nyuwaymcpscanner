@@ -6,7 +6,7 @@ import click
 from nyuwaymcpscanner.scanners.secrets import scan_secrets
 from nyuwaymcpscanner.scanners.yara_engine import run_yara
 from nyuwaymcpscanner.scanners.supply_chain import scan_supply_chain
-from nyuwaymcpscanner.scanners.virustotal import scan_virustotal, resolve_api_key, VTKeyMissing
+from nyuwaymcpscanner.scanners.virustotal import scan_virustotal, resolve_api_key, count_binaries, VTKeyMissing
 from nyuwaymcpscanner.scanners.manifest import parse_manifest
 from nyuwaymcpscanner.scanners.llm_safety import (
     run_local_llm_analysis,
@@ -136,6 +136,14 @@ def scan(
                                 findings.extend(scan_virustotal(local_str, vt_api_key))
                             except VTKeyMissing:
                                 pass
+                        else:
+                            binary_count = count_binaries(local_str)
+                            if binary_count:
+                                click.echo(
+                                    f"Note: {binary_count} binary file{'s' if binary_count != 1 else ''} not checked for malware - "
+                                    f"set VIRUSTOTAL_API_KEY for hash-based detection (free at virustotal.com).",
+                                    err=True,
+                                )
                 except FileNotFoundError as e:
                     click.echo(f"Error: {e}", err=True)
                     raise SystemExit(2)
