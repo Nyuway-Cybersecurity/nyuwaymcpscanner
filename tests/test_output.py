@@ -1,8 +1,7 @@
 """Direct tests for terminal and JSON output renderers."""
+
 import json
-import io
 import pytest
-from rich.console import Console
 
 from nyuwaymcpscanner.output.terminal import render_summary
 from nyuwaymcpscanner.output.json_report import build_report, render_json
@@ -84,6 +83,7 @@ def test_render_json_empty_findings():
 
 # ---------- SARIF ----------
 
+
 def test_sarif_top_level_shape(sample_findings):
     log = build_sarif("/tmp/foo", 78, "HIGH", sample_findings)
     assert log["version"] == "2.1.0"
@@ -121,8 +121,11 @@ def test_sarif_rule_ids_are_unique(sample_findings):
 
 def test_sarif_carries_evidence_in_properties(sample_findings):
     log = build_sarif("/tmp/foo", 78, "HIGH", sample_findings)
-    secret_result = next(r for r in log["runs"][0]["results"]
-                         if r["ruleId"].startswith("hardcoded_secret"))
+    secret_result = next(
+        r
+        for r in log["runs"][0]["results"]
+        if r["ruleId"].startswith("hardcoded_secret")
+    )
     assert "properties" in secret_result
     assert secret_result["properties"].get("evidence") is not None
 
@@ -135,15 +138,17 @@ def test_sarif_empty_findings_still_valid():
 
 
 def test_sarif_handles_findings_without_file_location():
-    findings = [{
-        "type": "shadow_tool",
-        "severity": "medium",
-        "weight": 15,
-        "tool_name": "github__create_issue",
-        "rationale": "Mimics a trusted tool name",
-        "confidence": 0.85,
-        "source": "local_llm",
-    }]
+    findings = [
+        {
+            "type": "shadow_tool",
+            "severity": "medium",
+            "weight": 15,
+            "tool_name": "github__create_issue",
+            "rationale": "Mimics a trusted tool name",
+            "confidence": 0.85,
+            "source": "local_llm",
+        }
+    ]
     log = build_sarif("/tmp/foo", 40, "MEDIUM", findings)
     result = log["runs"][0]["results"][0]
     # No physical location, but the result must still be well-formed.
@@ -159,12 +164,14 @@ def test_render_sarif_is_parseable(sample_findings):
 
 def test_sarif_message_text_capped(sample_findings):
     huge = "Z" * 5000
-    findings = [{
-        "type": "tool_poisoning",
-        "severity": "critical",
-        "weight": 35,
-        "rationale": huge,
-    }]
+    findings = [
+        {
+            "type": "tool_poisoning",
+            "severity": "critical",
+            "weight": 35,
+            "rationale": huge,
+        }
+    ]
     log = build_sarif("/tmp/foo", 90, "CRITICAL", findings)
     msg = log["runs"][0]["results"][0]["message"]["text"]
     assert len(msg) <= 1000

@@ -56,13 +56,44 @@ rule Suspicious_Shell_Execution_In_Tool
         severity = "high"
         weight = 25
         category = "code_execution"
-        description = "Shell or process execution in MCP server source"
+        description = "Shell or process execution in MCP server source (Python, JS, Go, Java, Rust, Ruby, C#, PHP, Kotlin)"
 
     strings:
-        $py_os_system = "os.system("
-        $py_subproc_shell = /subprocess\.(call|run|Popen)\([^)]*shell\s*=\s*True/
-        $js_child_process = "child_process.exec"
-        $js_eval = /\beval\s*\(/
+        // Python
+        $py_os_system      = "os.system("
+        $py_subproc_shell  = /subprocess\.(call|run|Popen)\([^)]*shell\s*=\s*True/
+
+        // JavaScript / TypeScript
+        $js_child_process  = "child_process.exec"
+        $js_eval           = /\beval\s*\(/
+
+        // Go
+        $go_exec_cmd       = "exec.Command("
+        $go_exec_ctx       = "exec.CommandContext("
+
+        // Java / Kotlin
+        $java_runtime_exec = "Runtime.getRuntime().exec("
+        $java_proc_builder = "new ProcessBuilder("
+        $kt_proc_builder   = "ProcessBuilder("
+
+        // Rust
+        $rust_command_new  = "Command::new("
+
+        // Ruby
+        $rb_system         = /\bsystem\s*\(/
+        $rb_backtick       = /`[^`]{3,}`/
+        $rb_popen          = "IO.popen("
+        $rb_exec           = /\bexec\s*\(/
+
+        // C#
+        $cs_proc_start     = "Process.Start("
+        $cs_new_process    = "new Process("
+
+        // PHP
+        $php_shell_exec    = "shell_exec("
+        $php_passthru      = "passthru("
+        $php_popen         = /\bpopen\s*\(/
+        $php_proc_open     = "proc_open("
 
     condition:
         any of them

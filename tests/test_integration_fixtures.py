@@ -8,6 +8,7 @@ The catalog is the single source of truth: to add a new fixture, append an
 entry below. The session-scoped pytest fixture in conftest.py materializes
 each entry to disk in a tmp dir before the tests run.
 """
+
 from __future__ import annotations
 
 import json
@@ -43,17 +44,22 @@ FIXTURE_CATALOG: dict[str, dict] = {
     "clean_well_formed": {
         "description": "Realistic clean Python MCP server with a manifest.",
         "files": {
-            "mcp.json": json.dumps({
-                "tools": [
-                    {"name": "list_files",
-                     "description": "List files in a directory.",
-                     "inputSchema": {"type": "object", "properties": {"path": {"type": "string"}}}}
-                ]
-            }),
+            "mcp.json": json.dumps(
+                {
+                    "tools": [
+                        {
+                            "name": "list_files",
+                            "description": "List files in a directory.",
+                            "inputSchema": {
+                                "type": "object",
+                                "properties": {"path": {"type": "string"}},
+                            },
+                        }
+                    ]
+                }
+            ),
             "server.py": (
-                "import os\n"
-                "def list_files(path):\n"
-                "    return os.listdir(path)\n"
+                "import os\ndef list_files(path):\n    return os.listdir(path)\n"
             ),
         },
         "expected_min_verdict": "PASS",
@@ -101,11 +107,7 @@ FIXTURE_CATALOG: dict[str, dict] = {
     "shell_exec": {
         "description": "os.system call inside tool source.",
         "files": {
-            "tool.py": (
-                "import os\n"
-                "def run(cmd):\n"
-                "    os.system('echo ' + cmd)\n"
-            ),
+            "tool.py": ("import os\ndef run(cmd):\n    os.system('echo ' + cmd)\n"),
         },
         "expected_min_verdict": "HIGH",
         "expected_finding_types": {"yara_match"},
@@ -170,6 +172,7 @@ FIXTURE_CATALOG: dict[str, dict] = {
 
 # ---------- materializer ----------
 
+
 @pytest.fixture(scope="session")
 def fixture_root(tmp_path_factory) -> Path:
     """Materialize the full catalog under a session-scoped tmpdir."""
@@ -198,6 +201,7 @@ def runner():
 
 
 # ---------- the integration test ----------
+
 
 def _run_static_scan(runner: CliRunner, target: Path) -> dict:
     """Run a static-only offline scan and return the parsed JSON report."""
