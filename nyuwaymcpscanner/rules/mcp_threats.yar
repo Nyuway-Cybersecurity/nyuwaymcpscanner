@@ -60,40 +60,74 @@ rule Suspicious_Shell_Execution_In_Tool
 
     strings:
         // Python
-        $py_os_system      = "os.system("
-        $py_subproc_shell  = /subprocess\.(call|run|Popen)\([^)]*shell\s*=\s*True/
+        $py_os_system        = "os.system("
+        $py_os_popen         = "os.popen("
+        $py_os_execv         = /\bos\.exec[vle]/
+        $py_subproc_shell    = /subprocess\.(call|run|Popen)\([^)]*shell\s*=\s*True/
+        $py_subproc_getout   = "subprocess.getoutput("
+        $py_subproc_getstat  = "subprocess.getstatusoutput("
+        $py_pty_spawn        = "pty.spawn("
 
         // JavaScript / TypeScript
-        $js_child_process  = "child_process.exec"
-        $js_eval           = /\beval\s*\(/
+        $js_child_process    = "child_process.exec"
+        $js_cp_spawn         = "child_process.spawn("
+        $js_cp_spawn_sync    = "child_process.spawnSync("
+        $js_cp_exec_sync     = "child_process.execSync("
+        $js_cp_exec_file     = "child_process.execFile("
+        $js_new_function     = /new\s+Function\s*\(/
+        $js_eval             = /\beval\s*\(/
 
         // Go
-        $go_exec_cmd       = "exec.Command("
-        $go_exec_ctx       = "exec.CommandContext("
+        $go_exec_cmd         = "exec.Command("
+        $go_exec_ctx         = "exec.CommandContext("
+        $go_syscall_exec     = "syscall.Exec("
+        $go_syscall_forkexec = "syscall.ForkExec("
 
-        // Java / Kotlin
-        $java_runtime_exec = "Runtime.getRuntime().exec("
-        $java_proc_builder = "new ProcessBuilder("
-        $kt_proc_builder   = "ProcessBuilder("
+        // Java
+        $java_runtime_exec   = "Runtime.getRuntime().exec("
+        $java_runtime_exec2  = "Runtime.exec("
+        $java_proc_builder   = "new ProcessBuilder("
+        $java_script_engine  = "ScriptEngineManager("
+
+        // Kotlin
+        $kt_proc_builder     = "ProcessBuilder("
+        $kt_runtime_exec     = "Runtime.getRuntime().exec("
 
         // Rust
-        $rust_command_new  = "Command::new("
+        $rust_command_new    = "Command::new("
+        $rust_std_command    = "std::process::Command"
+        $rust_nix_execv      = "nix::unistd::execv"
 
         // Ruby
-        $rb_system         = /\bsystem\s*\(/
-        $rb_backtick       = /`[^`]{3,}`/
-        $rb_popen          = "IO.popen("
-        $rb_exec           = /\bexec\s*\(/
+        $rb_system           = /\bsystem\s*\(/
+        $rb_backtick         = /`[^`]{3,}`/
+        $rb_pct_x            = /%x\{[^}]{2,}\}/
+        $rb_popen            = "IO.popen("
+        $rb_open3_popen      = "Open3.popen3("
+        $rb_open3_cap        = "Open3.capture3("
+        $rb_pty_spawn        = "PTY.spawn("
+        $rb_spawn            = /\bspawn\s*\(/
+        $rb_exec             = /\bexec\s*\(/
 
         // C#
-        $cs_proc_start     = "Process.Start("
-        $cs_new_process    = "new Process("
+        $cs_proc_start       = "Process.Start("
+        $cs_new_process      = "new Process("
+        $cs_proc_start_info  = "new ProcessStartInfo("
+        $cs_assembly_load    = "Assembly.Load("
+        $cs_csharp_provider  = "CSharpCodeProvider"
 
         // PHP
-        $php_shell_exec    = "shell_exec("
-        $php_passthru      = "passthru("
-        $php_popen         = /\bpopen\s*\(/
-        $php_proc_open     = "proc_open("
+        $php_shell_exec      = "shell_exec("
+        $php_passthru        = "passthru("
+        $php_popen           = /\bpopen\s*\(/
+        $php_proc_open       = "proc_open("
+        $php_system          = /\bsystem\s*\(/
+        $php_exec            = /\bexec\s*\(/
+        $php_eval            = /\beval\s*\(/
+        $php_backtick        = /`[^`]{3,}`/
+        $php_create_func     = "create_function("
+        $php_assert          = /\bassert\s*\(\s*['"]/
+        $php_preg_replace_e  = /preg_replace\s*\(\s*['"][^'"]*\/e/
 
     condition:
         any of them

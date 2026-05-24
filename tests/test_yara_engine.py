@@ -63,27 +63,67 @@ def test_each_yara_rule_fires(tmp_path, rule_name, content):
 @pytest.mark.parametrize(
     "filename,content",
     [
-        # Go
+        # Go - original
         ("tool.go", 'cmd := exec.Command("sh", "-c", userInput)\n'),
         ("tool.go", 'cmd := exec.CommandContext(ctx, "bash", arg)\n'),
-        # Java
+        # Go - new
+        ("tool.go", "syscall.Exec(path, args, env)\n"),
+        ("tool.go", "syscall.ForkExec(path, args, nil)\n"),
+        # Java - original
         ("Tool.java", "Process p = Runtime.getRuntime().exec(cmd);\n"),
         ("Tool.java", "ProcessBuilder pb = new ProcessBuilder(args);\n"),
-        # Rust
+        # Java - new
+        ("Tool.java", "ScriptEngineManager mgr = new ScriptEngineManager();\n"),
+        # Kotlin - original
+        ("Tool.kt", 'val pb = ProcessBuilder(listOf("sh", "-c", cmd))\n'),
+        # Kotlin - new
+        ("Tool.kt", "Runtime.getRuntime().exec(cmd)\n"),
+        # Rust - original
         ("tool.rs", 'let output = Command::new("sh").arg("-c").arg(cmd).output();\n'),
-        # Ruby
+        # Rust - new
+        ("tool.rs", "use std::process::Command;\n"),
+        ("tool.rs", "nix::unistd::execv(&path, &args);\n"),
+        # Ruby - original
         ("tool.rb", 'system("rm -rf /tmp/x")\n'),
         ("tool.rb", "result = `ls #{user_dir}`\n"),
         ("tool.rb", "IO.popen(cmd) { |io| io.read }\n"),
-        # C#
+        # Ruby - new
+        ("tool.rb", "result = %x{ls #{dir}}\n"),
+        ("tool.rb", "Open3.popen3(cmd) { |i, o, e| o.read }\n"),
+        ("tool.rb", "Open3.capture3(cmd)\n"),
+        ("tool.rb", "PTY.spawn(cmd) { |r, w, pid| r.read }\n"),
+        ("tool.rb", "pid = spawn(cmd)\n"),
+        # C# - original
         ("Tool.cs", 'Process.Start("cmd.exe", args);\n'),
         ("Tool.cs", "var proc = new Process();\n"),
-        # PHP
+        # C# - new
+        ("Tool.cs", "var psi = new ProcessStartInfo(cmd);\n"),
+        ("Tool.cs", "var asm = Assembly.Load(bytes);\n"),
+        ("Tool.cs", "var provider = new CSharpCodeProvider();\n"),
+        # PHP - original
         ("tool.php", "$out = shell_exec($cmd);\n"),
         ("tool.php", "passthru($user_input);\n"),
         ("tool.php", "$handle = proc_open($cmd, $desc, $pipes);\n"),
-        # Kotlin
-        ("Tool.kt", 'val pb = ProcessBuilder(listOf("sh", "-c", cmd))\n'),
+        # PHP - new
+        ("tool.php", "system($cmd);\n"),
+        ("tool.php", "exec($cmd, $output);\n"),
+        ("tool.php", "eval($code);\n"),
+        ("tool.php", "$out = `$cmd`;\n"),
+        ("tool.php", "$fn = create_function('', $code);\n"),
+        ("tool.php", "assert('eval($x)');\n"),
+        ("tool.php", "preg_replace('/pattern/e', $code, $str);\n"),
+        # Python - new
+        ("tool.py", "os.popen(cmd).read()\n"),
+        ("tool.py", "os.execv('/bin/sh', ['/bin/sh', '-c', cmd])\n"),
+        ("tool.py", "subprocess.getoutput(cmd)\n"),
+        ("tool.py", "subprocess.getstatusoutput(cmd)\n"),
+        ("tool.py", "pty.spawn(cmd)\n"),
+        # JS - new
+        ("tool.js", "child_process.spawn('sh', ['-c', cmd])\n"),
+        ("tool.js", "child_process.spawnSync('sh', args)\n"),
+        ("tool.js", "child_process.execSync(cmd)\n"),
+        ("tool.js", "child_process.execFile('/bin/sh', args)\n"),
+        ("tool.js", "const fn = new Function('return ' + code)();\n"),
     ],
 )
 def test_shell_exec_rule_fires_for_multilang(tmp_path, filename, content):
