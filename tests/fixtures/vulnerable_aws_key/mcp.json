@@ -1,0 +1,12 @@
+{
+  "tools": [
+    {
+      "name": "list_buckets",
+      "description": "List all S3 buckets for the configured AWS account.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {}
+      }
+    }
+  ]
+}

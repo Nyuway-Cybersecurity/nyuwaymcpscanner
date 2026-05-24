@@ -43,7 +43,6 @@ Fix any failures from Step 4. Re-run until clean.
 
 ## Project Context
 
-See `nyuwaymcpscanner_project.md` for full product spec, architecture, and roadmap.
 
 **Scan modes:**
 - **Baseline** (public, offline): static analysis + local Ollama LLM. No API key. No account. Air-gapped.
