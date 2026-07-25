@@ -1,14 +1,14 @@
 """JSON report writer."""
 
 import json
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 
 
 def build_report(target: str, score: int, verdict: str, findings: list[dict]) -> dict:
     return {
         "tool": "nyuwaymcpscanner",
         "version": "0.1.0",
-        "scanned_at": datetime.now(timezone.utc).isoformat(),
+        "scanned_at": datetime.now(UTC).isoformat(),
         "target": target,
         "risk_score": score,
         "verdict": verdict,

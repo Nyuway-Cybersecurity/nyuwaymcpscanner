@@ -32,7 +32,7 @@ class PyPIFetchError(Exception):
 
 
 def _parse_spec(spec: str) -> tuple[str, str | None]:
-    body = spec[len("pypi:") :] if spec.startswith("pypi:") else spec
+    body = spec.removeprefix("pypi:")
     if "@" in body:
         name, version = body.split("@", 1)
     else:
@@ -108,7 +108,7 @@ def fetch_pypi(spec: str):
         archive = workdir / filename
         _download(url, archive)
         extract_dir = workdir / "extracted"
-        if filename.endswith(".whl") or filename.endswith(".zip"):
+        if filename.endswith((".whl", ".zip")):
             safe_extract_zip(archive, extract_dir)
         else:
             safe_extract_tar(archive, extract_dir)

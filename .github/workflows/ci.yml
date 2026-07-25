@@ -108,3 +108,18 @@ jobs:
           name: dist
           path: dist/
           retention-days: 7
+
+  # Single stable check name for branch protection rules to require, since the
+  # `test` job's matrix produces a different check name per Python/OS combo.
+  ci:
+    name: ci
+    runs-on: ubuntu-latest
+    needs: [test, lint, build]
+    if: always()
+    steps:
+      - name: Check required jobs succeeded
+        run: |
+          if [ "${{ contains(needs.*.result, 'failure') || contains(needs.*.result, 'cancelled') }}" = "true" ]; then
+            echo "One or more required jobs did not succeed."
+            exit 1
+          fi

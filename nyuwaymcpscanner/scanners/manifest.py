@@ -19,7 +19,9 @@ def parse_manifest(path: str) -> dict:
         data = json.load(f)
 
     if not isinstance(data, dict):
-        raise ValueError(f"Manifest root must be an object, got {type(data).__name__}")
+        # Intentionally ValueError, not TypeError: callers (CLI, tests) catch
+        # ValueError as part of the documented "invalid manifest" contract.
+        raise ValueError(f"Manifest root must be an object, got {type(data).__name__}")  # noqa: TRY004
 
     data.setdefault("tools", [])
     return data
