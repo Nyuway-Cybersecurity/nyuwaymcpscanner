@@ -11,10 +11,10 @@ requires-python = ">=3.11"
 license = "Apache-2.0"
 license-files = ["LICENSE"]
 authors = [
-    { name = "Nyuway AI", email = "security@nyuway.ai" },
+    { name = "Nyuway AI", email = "connect@nyuway.ai" },
 ]
 maintainers = [
-    { name = "Nyuway AI", email = "security@nyuway.ai" },
+    { name = "Nyuway AI", email = "connect@nyuway.ai" },
 ]
 keywords = [
     "mcp",
