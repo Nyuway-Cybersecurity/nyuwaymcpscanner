@@ -33,7 +33,7 @@ class GitHubFetchError(Exception):
 
 def _parse_spec(spec: str) -> tuple[str, str, str]:
     """Return (owner, repo, ref). ref defaults to 'HEAD'."""
-    body = spec[len("github:") :] if spec.startswith("github:") else spec
+    body = spec.removeprefix("github:")
     match = _REF_PATTERN.match(body)
     if not match:
         raise GitHubFetchError(

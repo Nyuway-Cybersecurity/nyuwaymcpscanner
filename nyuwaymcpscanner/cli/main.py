@@ -3,33 +3,35 @@ from pathlib import Path
 
 import click
 
-from nyuwaymcpscanner.scanners.secrets import scan_secrets
-from nyuwaymcpscanner.scanners.yara_engine import run_yara
-from nyuwaymcpscanner.scanners.supply_chain import scan_supply_chain
-from nyuwaymcpscanner.scanners.virustotal import (
-    scan_virustotal,
-    resolve_api_key,
-    count_binaries,
-    VTKeyMissing,
-)
-from nyuwaymcpscanner.scanners.manifest import parse_manifest
-from nyuwaymcpscanner.scanners.llm_safety import (
-    run_local_llm_analysis,
-    OllamaUnavailable,
-)
-from nyuwaymcpscanner.output.scoring import calculate_score
-from nyuwaymcpscanner.output.terminal import render_summary
 from nyuwaymcpscanner.output.json_report import render_json
 from nyuwaymcpscanner.output.sarif_report import render_sarif
-from nyuwaymcpscanner.setup.local_llm import run_setup, SetupError, RECOMMENDED_MODEL
+from nyuwaymcpscanner.output.scoring import calculate_score
+from nyuwaymcpscanner.output.terminal import render_summary
+from nyuwaymcpscanner.scanners.llm_safety import (
+    OllamaUnavailable,
+    run_local_llm_analysis,
+)
+from nyuwaymcpscanner.scanners.manifest import parse_manifest
+from nyuwaymcpscanner.scanners.secrets import scan_secrets
+from nyuwaymcpscanner.scanners.supply_chain import scan_supply_chain
+from nyuwaymcpscanner.scanners.virustotal import (
+    VTKeyMissing,
+    count_binaries,
+    resolve_api_key,
+    scan_virustotal,
+)
+from nyuwaymcpscanner.scanners.yara_engine import run_yara
+from nyuwaymcpscanner.setup.local_llm import RECOMMENDED_MODEL, SetupError, run_setup
 from nyuwaymcpscanner.sources import (
-    resolve as resolve_source,
-    UnsupportedSource,
     GitHubFetchError,
     NpmFetchError,
     PyPIFetchError,
+    UnsupportedSource,
 )
-from nyuwaymcpscanner.sources.config import parse_config, ConfigParseError
+from nyuwaymcpscanner.sources import (
+    resolve as resolve_source,
+)
+from nyuwaymcpscanner.sources.config import ConfigParseError, parse_config
 
 SEVERITY_RANK = {"low": 1, "medium": 2, "high": 3, "critical": 4}
 
@@ -40,7 +42,6 @@ MANIFEST_CANDIDATES = ("mcp.json", "manifest.json", "mcp_manifest.json")
 @click.group()
 def cli():
     """nyuwaymcpscanner - Enterprise MCP security scanner."""
-    pass
 
 
 @cli.command()

@@ -1,7 +1,8 @@
 """YARA rule execution against MCP server source."""
 
-import yara
 from pathlib import Path
+
+import yara
 
 RULES_DIR = Path(__file__).resolve().parent.parent / "rules"
 DEFAULT_RULES_FILE = RULES_DIR / "mcp_threats.yar"
@@ -50,9 +51,7 @@ def _is_test_or_doc_file(path: Path) -> bool:
         (".test.ts", ".test.js", ".spec.ts", ".spec.js")
     ):
         return True
-    if path.suffix.lower() in {".md", ".sh"}:
-        return True
-    return False
+    return path.suffix.lower() in {".md", ".sh"}
 
 
 def _is_cli_file(path: Path) -> bool:
