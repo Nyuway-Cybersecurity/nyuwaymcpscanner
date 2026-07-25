@@ -2,6 +2,7 @@
 
 [![CI](https://github.com/Nyuway-Cybersecurity/nyuwaymcpscanner/actions/workflows/ci.yml/badge.svg)](https://github.com/Nyuway-Cybersecurity/nyuwaymcpscanner/actions/workflows/ci.yml)
 [![PyPI](https://img.shields.io/pypi/v/nyuwaymcpscanner)](https://pypi.org/project/nyuwaymcpscanner/)
+[![PyPI downloads](https://img.shields.io/pypi/dm/nyuwaymcpscanner)](https://pypi.org/project/nyuwaymcpscanner/)
 [![Python](https://img.shields.io/pypi/pyversions/nyuwaymcpscanner)](https://pypi.org/project/nyuwaymcpscanner/)
 [![License](https://img.shields.io/badge/license-Apache%202.0-blue)](LICENSE)
 
