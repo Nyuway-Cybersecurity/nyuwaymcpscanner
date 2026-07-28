@@ -9,6 +9,14 @@
 
 Catches hardcoded secrets, tool-poisoning instructions, supply-chain attacks, shell-execution backdoors, and data-exfiltration endpoints before they reach production - entirely offline, with no data leaving your machine.
 
+## 🎬 Demo
+
+The example below shows `nyuwaymcpscanner` performing an offline static security scan and generating a security verdict.
+
+<p align="center">
+  <img src="docs/images/nyuwaymcpscanner-demo.gif" alt="nyuwaymcpscanner Demo" width="900">
+</p>
+
 ```
 pip install nyuwaymcpscanner
 nyuwaymcpscanner scan ./my-mcp-server
