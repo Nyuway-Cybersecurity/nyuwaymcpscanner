@@ -15,7 +15,8 @@ Catches hardcoded secrets, tool-poisoning instructions, supply-chain attacks, sh
 The example below shows `nyuwaymcpscanner` performing an offline static security scan and generating a security verdict.
 
 <p align="center">
-  <img src="docs/images/nyuwaymcpscanner-demo.gif" alt="nyuwaymcpscanner Demo" width="900">
+  <img src="docs/images/nyuwaymcpscanner-demo.gif"
+       alt="Animated demo showing nyuwaymcpscanner performing an offline static security scan and generating a security verdict.">
 </p>
 
 ```
