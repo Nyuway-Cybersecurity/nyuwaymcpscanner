@@ -16,7 +16,7 @@ The example below shows `nyuwaymcpscanner` performing an offline static security
 
 <p align="center">
   <img src="docs/images/nyuwaymcpscanner-demo.gif"
-       alt="Animated demo showing nyuwaymcpscanner performing an offline static security scan and generating a security verdict.">
+       alt="Demo of nyuwaymcpscanner scanning an MCP package offline and reporting security findings, risk score, and final verdict.">
 </p>
 
 ```
