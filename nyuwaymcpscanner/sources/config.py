@@ -8,8 +8,8 @@ resolve (``local path``, ``npm:pkg``, or ``pypi:pkg``).
 from __future__ import annotations
 
 import json
+from collections.abc import Iterable
 from pathlib import Path
-from typing import Iterable
 
 NPM_RUNNERS = {"npx", "bunx", "pnpm", "yarn"}
 PY_RUNNERS = {"uvx", "pipx"}
@@ -37,7 +37,7 @@ class ConfigParseError(Exception):
 class ConfigEntry:
     """One server entry resolved from a host config."""
 
-    __slots__ = ("name", "spec", "notes")
+    __slots__ = ("name", "notes", "spec")
 
     def __init__(self, name: str, spec: str | None, notes: str = ""):
         self.name = name
@@ -55,9 +55,7 @@ def _is_path_like(arg: str) -> bool:
         return False
     if arg.startswith(("/", "./", "../", "~")):
         return True
-    if len(arg) >= 3 and arg[1] == ":" and arg[0].isalpha():
-        return True  # Windows drive letter
-    return False
+    return len(arg) >= 3 and arg[1] == ":" and arg[0].isalpha()  # Windows drive letter
 
 
 def _strip_npm_flags(args: list[str]) -> list[str]:

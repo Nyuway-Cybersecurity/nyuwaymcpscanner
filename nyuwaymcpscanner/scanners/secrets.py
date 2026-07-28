@@ -73,9 +73,7 @@ def _is_test_or_doc_file(path: Path) -> bool:
         (".test.ts", ".test.js", ".spec.ts", ".spec.js")
     ):
         return True
-    if path.suffix.lower() == ".md":
-        return True
-    return False
+    return path.suffix.lower() == ".md"
 
 
 def _is_placeholder(matched_value: str) -> bool:

@@ -31,7 +31,7 @@ class NpmFetchError(Exception):
 
 
 def _parse_spec(spec: str) -> tuple[str, str | None]:
-    body = spec[len("npm:") :] if spec.startswith("npm:") else spec
+    body = spec.removeprefix("npm:")
     # Split last '@' only when it follows a name (avoid splitting @scope/name).
     if body.startswith("@"):
         # scoped: @scope/name[@version]

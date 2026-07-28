@@ -1,10 +1,10 @@
 """Source dispatch. Maps a target spec like ``github:owner/repo`` to a context
 manager yielding a local path."""
 
+from .github import GitHubFetchError, fetch_github
 from .local import fetch_local
-from .github import fetch_github, GitHubFetchError
-from .npm import fetch_npm, NpmFetchError
-from .pypi import fetch_pypi, PyPIFetchError
+from .npm import NpmFetchError, fetch_npm
+from .pypi import PyPIFetchError, fetch_pypi
 
 
 class UnsupportedSource(Exception):
@@ -34,9 +34,9 @@ def _looks_like_windows_path(spec: str) -> bool:
 
 
 __all__ = [
-    "resolve",
-    "UnsupportedSource",
     "GitHubFetchError",
     "NpmFetchError",
     "PyPIFetchError",
+    "UnsupportedSource",
+    "resolve",
 ]
